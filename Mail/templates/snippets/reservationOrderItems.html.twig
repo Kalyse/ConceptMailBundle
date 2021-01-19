@@ -1,0 +1,42 @@
+{% autoescape false %}
+    {% for item in reservation.orderItemsAsSensitiveBreakdown %}
+        {% if loop.first %}
+            <h4 class="font-semibold">Breakdown</h4>
+            <hr />
+        {% endif %}
+        <row>
+            <columns small="12" large="6">{{ loop.index }}.
+                <label>
+                    {{ item.type | trans }}
+                    {% if item.type ==  constant("App\\Entity\\OrderItem::ORDER_ITEM_TYPE_RENTAL") %}
+                        x  {{ reservation.duration }} nights
+                    {% endif %}
+                </label>
+            </columns>
+            <columns small="12" large="6">
+                {% if item.preTaxAmount  !=  item.totalAmount %}
+                    <row>
+                        <columns small="12" large="6"><label>Pre Tax</label></columns>
+                        <columns small="12" large="6">{{ item.preTaxAmount | money_from_string(reservation.bookingCurrency) | money_localized_format }}</columns>
+                    </row>
+                {% endif %}
+                <row>
+                    <columns small="12" large="6">
+                        <p class="text-right">
+                            {{ item.totalAmount | money_from_string(reservation.bookingCurrency) | money_localized_format }}
+                        </p>
+                    </columns>
+                </row>
+                {% if item.note != '' %}
+                    <row>
+                        <columns small="12" large="6">
+                            <p class="text-right">Please Note: {{ item.note }}</p>
+                        </columns>
+                    </row>
+                {% endif %}
+
+            </columns>
+        </row>
+        <spacer size="4"></spacer>
+    {% endfor %}
+{% endautoescape %}

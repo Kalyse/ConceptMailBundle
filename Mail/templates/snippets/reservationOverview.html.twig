@@ -1,0 +1,143 @@
+{% autoescape false %}
+
+
+
+        <spacer size="15"></spacer>
+        <row>
+            <columns small="12" large="4"><label>Property</label></columns>
+            <columns small="12" large="8">
+                {{ reservation.property.descriptiveName | trim }}
+            </columns>
+            <spacer size="15"></spacer>
+        </row>
+        <spacer size="5"></spacer>
+        {% if reservation.listing and reservation.listing.providerPublicUrl is defined %}
+            <row>
+                <columns small="12" large="4"><label>Listing</label></columns>
+                <columns small="12" large="8">
+                    {{ reservation.listing | trim }}
+                    You can view this listing at <a target="_blank" href="{{ reservation.listing.providerPublicUrl }}">
+                        {{ reservation.listing.providerPublicUrl }}
+                    </a>
+                </columns>
+            </row>
+
+        {% endif %}
+        <spacer size="5"></spacer>
+        <row>
+            <columns small="12" large="4">
+                <label>
+                    {{ reservation.property.provider.providerName|default("Provider") }}
+                    Prop Ref
+                </label>
+            </columns>
+            <columns small="12" large="8">
+                {{ reservation.property.providerListingId|default("Non Supplied") | trans }}
+            </columns>
+        </row>
+        <spacer size="15"></spacer>
+        <row>
+            <columns small="12" large="4">
+                <label>Dates</label>
+                <p class="text-muted">(That's {{ reservation.duration }} nights)</p>
+            </columns>
+            <columns small="12" large="8">
+                {{ reservation.arrivalDate | date("F jS Y") }} - {{ reservation.departureDate | date("F jS Y") }}
+            </columns>
+        </row>
+        <spacer size="15"></spacer>
+        <row>
+            <columns small="12" large="4"><label>Guests</label></columns>
+            <columns small="12" large="8">
+
+                <span>{{ reservation.adults|default("Unknown number of") }} adults</span>
+                {% if reservation.children > 0 %}
+                    <span>- {{ reservation.children }} children</span>
+                {% endif %}
+                {% if reservation.infants > 0 %}
+                    <span>- {{ reservation.infants }} infants</span>
+                {% endif %}
+
+            </columns>
+        </row>
+
+        {% if reservation.pets > 0 %}
+            <spacer size="15"></spacer>
+            <row class="warning">
+
+                <columns small="12" large="4"><label> <strong>Pets</strong></label></columns>
+                <columns small="12" large="8">
+                    {{ reservation.pets }}
+                </columns>
+
+            </row>
+        {% endif %}
+
+        {% if reservation.listing and reservation.listing.outboundProvider is defined %}
+            <spacer size="15"></spacer>
+            <row>
+                <columns small="12" large="4"><label>Channel</label></columns>
+                <columns small="12" large="8">{{ reservation.listing.outboundProvider.name | trim }}</columns>
+            </row>
+        {% endif %}
+        {% if reservation.listing and reservation.listing.channel %}
+            <spacer size="15"></spacer>
+            <row>
+                <columns small="12" large="4"><label>Collection</label></columns>
+                <columns small="12" large="8">{{ reservation.listing.channel.collection.brandName | trans }}
+                    via {{ reservation.listing.channel.provider.providerName | trim }} </columns>
+            </row>
+        {% endif %}
+        <spacer size="15"></spacer>
+        <row>
+            <columns small="12" large="4"><label>Created At</label></columns>
+            <columns small="12" large="8">{{ reservation.createdAt | date }}</columns>
+        </row>
+        <spacer size="15"></spacer>
+        <row>
+            <columns small="12" large="4"><label>Channel Booking ID</label></columns>
+            <columns small="12" large="8">{{ reservation.reservationId|default("Non Supplied") }}</columns>
+        </row>
+        <spacer size="15"></spacer>
+        <row>
+            <columns small="12" large="4"><label>Channel Manager Reservation ID</label></columns>
+            <columns small="12" large="8">{{ reservation.id | trans }}</columns>
+        </row>
+        <spacer size="15"></spacer>
+        <row>
+            <columns small="12" large="4"><label>Lead Guest</label></columns>
+            <columns small="12" large="8">
+                {% if reservation.guest %}
+                    <b>{{ reservation.guest.firstName|default('No name supplied') }} {{ reservation.guest.lastName }}</b>
+                {% endif %}
+                {% if reservation.guestAddress %}
+                    <p class="text-left">
+                        {{ reservation.guestAddress.addressLine1 }}
+                        {{ reservation.guestAddress.addressLine2 }}
+                        {{ reservation.guestAddress.addressCity }}
+                        <br/>
+                        {{ reservation.guestAddress.addressState }}
+                        {{ reservation.guestAddress.addressPostalCode }}
+                        <br/>
+                        {{ reservation.guestAddress.addressCountry }}
+                    </p>
+                {% endif %}
+            </columns>
+        </row>
+        <spacer size="15"></spacer>
+        <row>
+            <columns small="12" large="4"><label>Lead Email</label></columns>
+            <columns small="12" large="8">
+                <div>{{ reservation.guest.email|default('No email supplied') }}</div>
+            </columns>
+        </row>
+        <spacer size="15"></spacer>
+        <row>
+            <columns small="12" large="4"><label>Lead Phone</label></columns>
+            <columns small="12" large="8">
+                <div>{{ reservation.phone|default('No phone number supplied') }}</div>
+            </columns>
+        </row>
+
+
+{% endautoescape %}

@@ -1,0 +1,14 @@
+{% autoescape false %}
+    <row>
+        <columns small="12">
+
+            {% set failedPayments = reservation.payments |filter(v => v is constant('App\\Entity\\Payment::STATUS_FAILED'))  %}
+            {% if failedPayments | length > 0 %}
+                <strong class="text-danger">
+                    Attention Required: This reservation has {{ failedPayments | length }} failed payment(s)
+                </strong>
+            {% endif %}
+
+        </columns>
+    </row>
+{% endautoescape %}

@@ -1,0 +1,110 @@
+{% autoescape false %}
+    <row>
+        <columns small="12">
+            {% set hasGatewayPayment = true %}
+            {% for payment in reservation.payments %}
+
+                {% if loop.first %}
+                    <row>
+                        <columns valign="middle" small="12" large="4">
+                            <h4 class="font-semibold">Payments</h4>
+                        </columns>
+                        <columns valign="middle" small="12" large="8">
+                            <img height="55" src="{{ email.image( '@images/icons/paymentPartners.png') }}"/>
+                        </columns>
+                    </row>
+                    <row>
+                        <columns valign="middle" small="12" large="12">
+                            <hr />
+                        </columns>
+                    </row>
+
+                {% endif %}
+                {% if payment.amount  %}
+                    <row>
+
+                        <columns small="12" large="4">
+                            <row>
+
+                                {% if payment | class == "App\\Entity\\ImmediatePayment" %}
+                                    <columns  small="12" large="4">
+                                        <img height="32" src="{{ email.image('@images/icons/twotone_credit_card_black_48dp.png') }}"/>
+                                    </columns>
+                                {% elseif payment | class == "App\\Entity\\DeferredPayment" %}
+                                    <columns  small="12" large="4">
+                                        <img height="32" src="{{ email.image('@images/icons/twotone_touch_app_black_48dp.png') }}"/>
+                                    </columns>
+                                {% elseif payment | class == "App\\Entity\\Payment" %}
+                                    <columns small="12" large="4">
+                                        <img height="32" src="{{ email.image('@images/icons/twotone_language_black_48dp.png') }}"/>
+                                    </columns>
+                                {% endif %}
+                                <columns valign="middle" small="12" large="6">
+                                    <label class="text-left">{{ payment.type| trans }}</label>
+                                </columns>
+                            </row>
+                            <row>
+                                <columns small="12" large="4">
+                                    {% if payment.status == constant("App\\Entity\\Payment::STATUS_COMPLETED") %}
+                                        <span class="text-muted">Paid: {{ payment.dueDate | default("now") | date("M j, Y") }}</span>
+                                    {% else %}
+                                        <span  class="text-muted">Due: {{ payment.dueDate | default("now") | date("M j, Y") }}</span>
+                                    {% endif %}
+                                </columns>
+                            </row>
+                            <row>
+                                <columns small="12" large="4">
+                                    {% if guestConfirmationEmailType is not defined %}
+                                        <p class="{{ payment.status | textByStatus }}">{{ payment.status | trans }}</p>
+                                    {% endif %}
+                                </columns>
+                            </row>
+                            <spacer size="16"></spacer>
+                        </columns>
+                        <columns small="12" large="8">
+                            <row>
+                                <columns valign="middle" small="12" large="8">
+                                    <h5 class="text-right">{{ payment.amount | money_from_string(payment.currency) | money_localized_format  }}</h5>
+                                </columns>
+                            </row>
+                            {% if payment.transactions %}
+                                <row>
+                                    <p class="text-muted">
+                                        {% for transaction in payment.transactions %}
+                                            <strong class="{{ payment.status | textByStatus }}">{{ transaction.message }}</strong>
+
+                                            {% if transaction.response is defined %}
+
+                                                {% if transaction.response.transaction is defined %}
+                                                    <span class="text-muted">
+                                                {{ transaction.response.transaction.transaction_type|default("") }}
+                                                        {{ transaction.response.transaction.message|default("") }}
+                                                        {{ transaction.response.transaction.gateway_transaction_id|default("") }}
+                                            </span>
+                                                {% endif %}
+                                                <!-- This is Gateway specific errors, so essentially before a transaction has even occured. -->
+                                                {% if transaction.response.errors is defined %}
+                                                    {% if guestConfirmationEmailType is not defined %}
+                                                        This transaction has not completed and this payment has not been charged.
+                                                    {% else %}
+                                                        {# we don't want to show guests the actual errors (could contain sensitive API keys #}
+                                                        {% for error in transaction.response.errors %}
+                                                            {{ error.message }}
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endif %}
+
+
+                                        {% endfor %}
+                                    </p>
+                                </row>
+                            {% endif %}
+                        </columns>
+                    </row>
+                {% endif %}
+            {% endfor %}
+        </columns>
+    </row>
+    <spacer size="32"></spacer>
+{% endautoescape %}

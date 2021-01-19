@@ -1,0 +1,98 @@
+{% autoescape false %}
+    {% extends __baseLayout|default( '@Mails/layouts/base_inky_layout.html.twig' ) %}
+    {% trans_default_domain 'messages' %}
+    {% block content %}
+
+
+
+        <container class="content">
+
+            <spacer size="16"></spacer>
+
+            <row>
+                <columns small="12">
+                    {% set reservation = rec.reservation %}
+                    <h4>You need to take immediate action for your
+                        ({{ reservation.reservationStatus | trans }}
+                        ) {{ reservation.reservationType | trans }}.</h4>
+                    <p>{{ notification is defined ? notification.reason | trans }}</p>
+                    <spacer size="16"></spacer>
+                    <row>
+                        <img style="max-height:300px;" src="{{ rec.reservation.property | propertyImageFromSchema | ik(
+                            {
+                                "blur" : 3,
+
+                                "chain-0" : true,
+                                "crop-mode" : "pad_resize",
+                                "focus" : "bottom",
+
+                                "chain-1" : true,
+                                "width" : 800,
+                                "height" : 320,
+
+                                "chain-1" : true,
+
+                                "next-chain" : true,
+                                "border" : "90_FFFFFF",
+
+                                "chain-2" : true,
+                                "overlay-image" : "warning-thick_rk8zjufkV.png",
+                                "overlay-focus" : "top",
+
+                                "chain-3" : true,
+                                "trim" : true,
+                            }
+                        ) }}"/>
+                    </row>
+                    <spacer size="16"></spacer>
+                    <h1>Hi, {{ recipient is defined ? recipient.getDisplayName() }}</h1>
+
+
+                    <p class="lead">We've struck an issue when trying to send your
+                        "{{ rec.reservation.reservationType | trans }}" back
+                        to {{ rec.reservation.property.provider.typeAndName | trans }}</p>
+
+                    <row>
+                        <columns small="12" large="8">
+
+                            {% if reservation.totalReservationCost > 0 %}
+                                This reservation was priced at {{ reservation.totalReservationCost  | money_from_string(reservation.bookingCurrency) | money_localized_format  }}
+
+                                {% if reservation.totalAmountPaid == 0 %}
+                                    and no payments have been captured.
+                                    {% if reservation.totalAmountDeferred > 0 %}
+                                        However, we have authorized
+                                        <b>{{ reservation.totalAmountDeferred  | money_from_string(reservation.bookingCurrency) | money_localized_format  }}</b> as deferred payments.
+                                    {% endif %}
+                                {% else %}
+
+                                    The guest has paid {{ reservation.totalAmountPaid |  money_from_string(reservation.bookingCurrency) | money_localized_format  }} from the expected total of {{ reservation.totalReservationCost  | money_from_string(reservation.bookingCurrency) | money_localized_format  }}.
+                                    {% if reservation.totalAmountPaid > reservation.totalReservationCost %}
+                                        <p class="text-danger">In addition to the failure, it  looks like an overpayment has occured.</p>
+                                    {% endif %}
+                                {% endif %}
+
+
+                            {% elseif reservation.calculatedTotalOfPaymentCoverage > 0 %}
+                                <p>No price was supplied for this {{ reservation.reservationType | trans }}, however,
+                                    we have identified a total
+                                    of {{ reservation.calculatedTotalOfPaymentCoverage  | money_from_string(reservation.bookingCurrency) | money_localized_format  }}
+                                    payments receivable.</p>
+                            {% else %}
+                                <p>No price was supplied for this {{ reservation.reservationType | trans }}</p>
+                            {% endif %}
+                        </columns>
+                    </row>
+
+                    {% include '@Mails/snippets/reservationOverview.html.twig' with { "reservation" : reservation } %}
+                    <spacer size="35"></spacer>
+                    <callout class="primary">
+                        <strong>Error Received</strong>
+                        <p>{{ rec.note }}</p>
+                    </callout>
+                </columns>
+            </row>
+
+        </container>
+    {% endblock %}
+{% endautoescape %}

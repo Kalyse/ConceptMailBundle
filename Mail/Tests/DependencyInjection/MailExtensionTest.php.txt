@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Mail\Tests\DependencyInjection;
+
+use App\Mail\DependencyInjection\MailExtension;
+use App\Mail\Provider\Mail\DoctrineMailProvider;
+use App\Mail\Provider\Template\DoctrineMailTemplateProvider;
+use App\Mail\Sender\Sender;
+use App\Mail\Sender\SwiftMailSender;
+use App\Mail\Services\Mailer;
+use App\Mail\Template\MailTemplate;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+
+/**
+ * Class MailExtensionTest.
+ */
+class MailExtensionTest extends TestCase
+{
+    public function testGetAlias()
+    {
+        $mailExtension = new MailExtension();
+        $alias = $mailExtension->getAlias();
+
+        $this->assertEquals('extellient_mail', $alias);
+    }
+
+    public function testLoadEmptyConfiguration()
+    {
+        $container = $this->createContainer();
+        $container->registerExtension(new MailExtension());
+        $container->loadFromExtension('extellient_mail');
+        $this->compileContainer($container);
+
+        $this->assertEquals(
+            DoctrineMailTemplateProvider::class,
+            $container->getDefinition(MailTemplate::class)->getArgument(0)
+        );
+        $this->assertEquals(
+            DoctrineMailProvider::class,
+            $container->getDefinition(SwiftMailSender::class)->getArgument(1)
+        );
+        $this->assertEquals(
+            DoctrineMailProvider::class,
+            $container->getDefinition(Mailer::class)->getArgument(0)
+        );
+
+        $this->assertEquals(
+            SwiftMailSender::class,
+            $container->getDefinition(Sender::class)->getArgument(0)
+        );
+        $this->assertEquals(
+            DoctrineMailProvider::class,
+            $container->getDefinition(Sender::class)->getArgument(1)
+        );
+    }
+
+    private function createContainer()
+    {
+        $container = new ContainerBuilder(new ParameterBag(array(
+            'kernel.cache_dir' => __DIR__,
+            'kernel.charset' => 'UTF-8',
+            'kernel.debug' => false,
+            'kernel.root_dir' => __DIR__,
+            'kernel.bundles' => array(),
+        )));
+
+        return $container;
+    }
+
+    private function compileContainer(ContainerBuilder $container)
+    {
+        $container->getCompilerPassConfig()->setOptimizationPasses(array());
+        $container->getCompilerPassConfig()->setRemovingPasses(array());
+        $container->compile();
+    }
+}

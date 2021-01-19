@@ -1,0 +1,129 @@
+{% autoescape false %}
+    {% extends __baseLayout|default( '@Mails/layouts/base_inky_layout.html.twig' ) %}
+    {% trans_default_domain 'messages' %}
+    {% block content %}
+
+        <container class="content">
+
+            <spacer size="16"></spacer>
+            <p class="text-center text-muted">Please do not reply directly to this automated email.</p>
+
+            {% if reservation.listing and reservation.listing.channel and reservation.listing.channel.collection.logo %}
+                <spacer size="15"></spacer>
+                <row>
+                    <columns class="text-center" small="12" large="12">
+                        <img class="text-center" style="max-width:45%; min-width: 200px;" alt="{{ reservation.listing.channel.collection.brandName | trim }}"
+                             src="{{ reservation.listing.channel.collection.id | brandImage('medium', { 'context' : 'logo' } ) | raw }}"/>
+                    </columns>
+                </row>
+                <spacer size="6"></spacer>
+            {% endif %}
+
+            <row>
+                <columns>
+                    <h4 class="font-semibold">
+                        New {{ reservation.reservationType | trans }} ({{ reservation.reservationStatus | trans }}).
+                        {% if reservation.totalAmountPaid > 0 or reservation.totalAmountDeferred > 0 %}
+                            {{ reservation.guest.firstName|default('The guest') }} arrives {{ reservation.arrivalDate | date("F jS Y") }}
+                        {% endif  %}
+                    </h4>
+                    <spacer size="4"></spacer>
+                </columns>
+
+            </row>
+            {% if reservation.guestMessage %}
+                <row>
+                    <p class="font-black">
+                        {{ reservation.guest.firstName|default('The guest') }} included the message:
+                    </p>
+                </row>
+                <row>
+                    <columns class="message-blockquote" small="12" large="12">
+                        <spacer size="16"></spacer>
+                        <p class="p-4">
+                        {{ reservation.guestMessage }}
+                        </p>
+                    </columns>
+                </row>
+            {% endif %}
+            <spacer size="16"></spacer>
+            <row>
+                <columns small="12" large="12">
+
+                    {% if reservation.totalReservationCost > 0 %}
+                        <h5>Priced at {{ reservation.totalReservationCost  | money_from_string(reservation.bookingCurrency) | money_localized_format  }}</h5>
+                        <p class="text-label">
+                            {% if reservation.totalAmountPaid == 0 %}
+                                No payments received.
+                                {% if reservation.totalAmountDeferred > 0 %}
+                                    However, we have authorized
+                                    <b>{{ reservation.totalAmountDeferred  | money_from_string(reservation.bookingCurrency) | money_localized_format  }}</b> as deferred payments.
+                                {% endif %}
+                            {% else %}
+                                {{ reservation.totalAmountPaid  | money_from_string(reservation.bookingCurrency) | money_localized_format  }} paid out of {{ reservation.totalReservationCost  | money_from_string(reservation.bookingCurrency) | money_localized_format  }}
+                            {% endif %}
+                        </p>
+
+                    {% elseif reservation.calculatedTotalOfPaymentCoverage > 0 %}
+                        <p class="text-label">This {{ reservation.reservationType | trans }} was created without a
+                            total cost breakdown. However, we have identified a total of
+                            <b>{{ reservation.calculatedTotalOfPaymentCoverage  | money_from_string(reservation.bookingCurrency) | money_localized_format  }}</b>
+                            payments receivable.</p>
+                    {% else %}
+                        <p class="text-label">No price was supplied for
+                            this {{ reservation.reservationType | trans }}</p>
+                    {% endif %}
+                    {% include '@Mails/snippets/reservationHasFailedPayment.html.twig' %}
+
+                </columns>
+            </row>
+            <row>
+                <columns class="large-offset-6" small="6" large="4">
+                    {% if reservation._embedded.application.hostname is defined %}
+                        <small>Lycan account required</small>
+                        <button class="google expand"
+                                href="https://{{ reservation._embedded.application.hostname ~ path('admin_app_reservation_edit', { "id" : reservation.id}) }}">
+                            View on Dashboard
+                        </button>
+                    {% endif %}
+                </columns>
+            </row>
+
+
+            <row>
+                <columns small="12">
+
+                    <p>{{ notification is defined ? notification.reason | trans }}</p>
+                    {% if  reservation.property | propertyImageFromSchema %}
+                        <img style="max-height:300px;" src="{{ reservation.property | propertyImageFromSchema | ik(
+                            {
+                                "width" : 800,
+                                "height" : 220,
+                                "chain-1" : true,
+                                "blur" : 3,
+                                "next-chain" : true,
+                                "border" : "90_FFFFFF",
+                                "chain-2" : true,
+                                "overlay-image" : "send-invert_ryfHhdGkE.png",
+                                "overlay-focus" : "top",
+                                "chain-3" : true,
+                                "trim" : true,
+                            }
+                        ) }}"/>
+                    {% endif %}
+                    <spacer size="16"></spacer>
+{#                    <h1>Hi, {{ recipient is defined ? recipient.getDisplayName() }}</h1>#}
+
+                    {% include '@Mails/snippets/reservationOverview.html.twig' %}
+
+                    <spacer size="30"></spacer>
+                    {% include '@Mails/snippets/reservationPayments.html.twig' %}
+                    {% include '@Mails/snippets/reservationOrderItems.html.twig' %}
+
+
+                </columns>
+            </row>
+
+        </container>
+    {% endblock %}
+{% endautoescape %}

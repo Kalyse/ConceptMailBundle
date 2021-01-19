@@ -1,0 +1,51 @@
+{% autoescape false %}
+
+    <wrapper>
+        <row>
+            <columns small="12" large="4">Property</columns>
+            <columns small="12" large="8">{{ reservation.property | trans }}</columns>
+        </row>
+
+        <row>
+            <columns small="12" large="4">Provider ID</columns>
+            <columns small="12"
+                     large="8">{{ reservation.property.providerListingId|default("Non Supplied") | trans }}</columns>
+        </row>
+
+        <row>
+            <columns small="12" large="4">Dates</columns>
+            <columns small="12" large="8">{{ reservation.arrivalDate | date("Y-m-d") }}
+                - {{ reservation.departureDate | date("Y-m-d") }} <span
+                        class="text-muted">(That's {{ reservation.getDuration() }} nights)</span></columns>
+        </row>
+        {% if reservation.listing and reservation.listing.provider %}
+            <row>
+                <columns small="12" large="4">Channel</columns>
+                <columns small="12" large="8">{{ reservation.listing.provider.providerType | trans }}</columns>
+            </row>
+            {% if reservation.listing.channel %}
+                <row>
+                    <columns small="12" large="4">Collection</columns>
+                    <columns small="12" large="8">{{ reservation.listing.channel.brand | trans }}</columns>
+                </row>
+            {% endif %}
+        {% endif %}
+
+        <row>
+            <columns small="12" large="4">Created At</columns>
+            <columns small="12" large="8">{{ reservation.createdAt | date }}</columns>
+        </row>
+
+        <row>
+            <columns small="12" large="4">Supplied Booking ID</columns>
+            <columns small="12" large="8">{{ reservation.reservationId|default("Non Supplied") }}</columns>
+        </row>
+
+        <row>
+            <columns small="12" large="4">Lycan Reservation ID</columns>
+            <columns small="12" large="8">{{ reservation.id | trans }}</columns>
+        </row>
+
+    </wrapper>
+
+{% endautoescape %}

@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+
+</head>
+<body>
+{% apply inky_to_html|inline_css(source('@css/foundation-emails.css'), source('@css/emails.css')) %}
+<container>
+    <row class="header">
+        <columns large="6">
+                {% block content %}{% endblock %}
+        </columns>
+    </row>
+</container>
+{% endapply %}
+</body>
+</html>

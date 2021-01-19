@@ -1,0 +1,104 @@
+{% autoescape false %}
+
+    {% if reservation.guestMessage %}
+        <row>
+            <p class="font-black">
+                You included the message:
+            </p>
+        </row>
+
+        <row>
+            <columns class="message-blockquote" small="12" large="12">
+                <spacer size="16"></spacer>
+                <p class="p-4">
+                    {{ reservation.guestMessage }}
+                </p>
+            </columns>
+        </row>
+    {% endif %}
+
+    {% if reservation.listing and reservation.listing.channel and reservation.listing.channel.collection.logo %}
+        <spacer size="15"></spacer>
+        <row>
+            <columns small="12" large="12">
+                <img class="float-right" alt="{{ reservation.listing.channel.collection.brandName | raw }}"
+                     src="{{ reservation.listing.channel.collection.id | brandImage('small', { 'context' : 'logo' } ) | raw }}"/>
+            </columns>
+        </row>
+    {% endif %}
+    <spacer size="15"></spacer>
+    <row>
+        <columns small="12" large="4"><label>Property</label></columns>
+        <columns small="12" large="8">
+            {{ reservation.property.descriptiveName | trim }}
+        </columns>
+    </row>
+    <spacer size="15"></spacer>
+    <row>
+        <columns small="12" large="4">
+            <label>Dates</label>
+            <p class="text-muted">(That's {{ reservation.duration }} nights)</p>
+        </columns>
+        <columns small="12" large="8">
+            {{ reservation.arrivalDate | date("F jS Y") }} - {{ reservation.departureDate | date("F jS Y") }}
+        </columns>
+    </row>
+    <spacer size="15"></spacer>
+    <row>
+        <columns small="12" large="4"><label>Guests</label></columns>
+        <columns small="12" large="8">
+
+            <span>{{ reservation.adults|default("Unknown number of") }} adults</span>
+            {% if reservation.children > 0 %}
+                <span>- {{ reservation.children }} children</span>
+            {% endif %}
+            {% if reservation.infants > 0 %}
+                <span>- {{ reservation.infants }} infants</span>
+            {% endif %}
+
+        </columns>
+    </row>
+
+    {% if reservation.pets > 0 %}
+        <spacer size="15"></spacer>
+        <row class="warning">
+
+            <columns small="12" large="4"><label> <strong>Pets</strong></label></columns>
+            <columns small="12" large="8">
+                {{ reservation.pets }}
+            </columns>
+
+        </row>
+    {% endif %}
+    <spacer size="15"></spacer>
+    <row>
+        <columns small="12" large="4"><label>Created At</label></columns>
+        <columns small="12" large="8">{{ reservation.createdAt | date }}</columns>
+    </row>
+    <spacer size="15"></spacer>
+    <row>
+        <columns small="12" large="4"><label>Lead Guest</label></columns>
+        <columns small="12" large="8">
+            {% if reservation.guest %}
+                <b>{{ reservation.guest.firstName|default('No name supplied') }} {{ reservation.guest.lastName }}</b>
+            {% endif %}
+        </columns>
+    </row>
+    <spacer size="15"></spacer>
+    <row>
+        <columns small="12" large="4"><label>Lead Email</label></columns>
+        <columns small="12" large="8">
+            <div>{{ reservation.guest.email|default('No email supplied') }}</div>
+        </columns>
+    </row>
+
+    <spacer size="15"></spacer>
+    <row>
+        <columns small="12" large="4"><label>Your Booking ID</label></columns>
+        <columns small="12" large="8">
+              {{ reservation.reservationId|default("Non Supplied") }}
+        </columns>
+    </row>
+
+
+{% endautoescape %}

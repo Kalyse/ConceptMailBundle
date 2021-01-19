@@ -1,0 +1,183 @@
+{% autoescape false %}
+    {% extends __baseLayout|default( '@Mails/layouts/base_inky_layout.html.twig' ) %}
+    {% trans_default_domain 'messages' %}
+    {% block content %}
+
+        <container class="content">
+            <spacer size="16"></spacer>
+            <p class="text-center text-muted">Please do not reply directly to this automated email.</p>
+
+            {% if reservation.listing and reservation.listing.channel and reservation.listing.channel.collection.logo %}
+                <spacer size="15"></spacer>
+                <row>
+                    <columns class="text-center" small="12" large="12">
+                        <img class="text-center" style="max-width:45%; min-width: 200px;" alt="{{ reservation.listing.channel.collection.brandName | trim }}"
+                             src="{{ reservation.listing.channel.collection.id | brandImage('medium', { 'context' : 'logo' } ) | raw }}"/>
+                    </columns>
+                </row>
+                <spacer size="6"></spacer>
+            {% endif %}
+
+            {% if reservation.property.owner is defined and reservation.property.owner %}
+                {% set memberSettings = channelMemberSettingsByReservationId(reservation.id) %}
+                {% set agencyName = memberSettings.brandCompanyName|default(reservation.property.owner.brandCompanyName) | default(reservation.property.owner.username) | trans %}
+            {% endif %}
+            <row class=" {{ reservation.reservationStatus | backgroundByStatus }}">
+                <columns>
+                    <spacer size="16"></spacer>
+
+                    <h4 class="font-semibold px-4">
+                        Hi {{ reservation.guest.firstName }}. We've received your {{ reservation.reservationType | trans }} ({{ reservation.reservationStatus | trans }}).
+                    </h4>
+                    {% if reservation.totalAmountPaid > 0 or reservation.totalAmountDeferred > 0 %}
+                        <h5 class="font-semibold px-4">
+                            We're looking forward to your arrival on {{ reservation.arrivalDate | date("F jS Y") }}
+                        </h5>
+                    {% endif  %}
+
+                    {% if reservation.reservationType == constant('App\\Entity\\Reservation::TYPE_ENQUIRY') %}
+                        <p class="px-4">
+                            Thanks for your {{ reservation.reservationType | trans }} made through
+                            <span class="agency-name">{{ reservation.listing.channel.descriptiveName | trans }}</span>.
+
+                            Your {{ reservation.reservationType | trans }} has been sent directly to
+                            <span class="agency-name">{{ agencyName|default("the owner") }}</span>
+                            who will be in contact with you in the next 48 hours with your answer.
+
+                            Should you have any further questions regarding your holiday or the property that you're
+                            interested in, please contact {{ agencyName|default("the owner") }} directly.
+                        </p>
+                    {% else %}
+                        <p class="px-4">
+                            We thank you for your {{ reservation.reservationType | trans }} made through
+                            <span class="agency-name">{{ reservation.listing.channel.descriptiveName | trans }}</span>.
+
+                            Your booking will be made directly with
+                            <span class="agency-name">{{ agencyName|default("the owner") }}</span>
+                            who will be in contact with you in the next 48 hours with more details on your holiday.
+                            Should you have any questions regarding your holiday or the property that you have booked,
+                            please contact {{ agencyName| default("the owner") }} directly.
+                        </p>
+                    {% endif %}
+
+                    <p class="px-4"> Thank you for using {{ reservation.listing.channel.descriptiveName | trans }} and we wish you a fantastic
+                        holiday!</p>
+
+                    {% if memberSettings is defined and memberSettings.safetyGuidanceUrl is defined %}
+                        <p class="px-4">If you have a question that relates to COVID-19 and your booking, please refer to the <a href="{{ memberSettings.safetyGuidanceUrl }}">safety guidance document</a> prepared by {{ agencyName }}</p>
+                    {% endif %}
+
+                </columns>
+            </row>
+            <spacer size="16"></spacer>
+            <spacer size="16"></spacer>
+
+            {% if memberSettings is defined and memberSettings %}
+                <wrapper>
+                    <row>
+                        <columns small="4" large="3">
+                            {% thumbnail memberSettings.logo, 'small' %}
+                        </columns>
+
+                        <columns small="8" large="9">
+                            {% if memberSettings.brandCompanyName %}
+                                <row>
+                                    <columns small="12" large="4"><label>Agency.</label></columns>
+                                    <columns small="12" large="8">
+                                        <p class="text-right tight">
+                                            {{ memberSettings.brandCompanyName }}
+                                        </p>
+                                    </columns>
+                                </row>
+                            {% endif %}
+                            {% if memberSettings.website %}
+                                <row>
+                                    <columns small="12" large="4"><label>Web.</label></columns>
+                                    <columns small="12" large="8">
+                                        <p class="text-right  tight">
+                                            {{ memberSettings.website }}
+                                        </p>
+                                    </columns>
+                                </row>
+                            {% endif %}
+                            {% if memberSettings.phone %}
+                                <row>
+                                    <columns small="12" large="4"><label>Telephone.</label></columns>
+                                    <columns small="12" large="8">
+                                        <p class="text-right  tight">
+                                            <a href="tel:{{ memberSettings.phone }}">{{ memberSettings.phone }}</a>
+                                        </p>
+                                    </columns>
+                                </row>
+                            {% endif %}
+                            {% if memberSettings.emails|first %}
+                                <row>
+                                    <columns small="12" large="4"><label>Email.</label></columns>
+                                    <columns small="12" large="8">
+                                        <p class="text-right  tight">
+                                            <a href="mailto:{{ memberSettings.emails|first }}">{{ memberSettings.emails|first }}</a>
+                                        </p>
+                                    </columns>
+                                </row>
+                            {% endif %}
+                        </columns>
+                    </row>
+                </wrapper>
+            {% endif %}
+
+            <row>
+                <columns small="12" large="12">
+
+                    {% if reservation.totalReservationCost > 0 %}
+                        <h5>Total Cost {{ reservation.totalReservationCost | money_from_string(reservation.bookingCurrency) | money_localized_format }}</h5>
+                        <p class="text-label">
+                            {% if reservation.totalAmountPaid == 0 %}
+                                No payments received.
+                                {% if reservation.totalAmountDeferred > 0 %}
+                                    However, we have authorized
+                                    <b>{{ reservation.totalAmountDeferred | money_from_string(reservation.bookingCurrency) | money_localized_format }}</b> as deferred payments.
+                                {% endif %}
+                            {% else %}
+                                {{ reservation.totalAmountPaid | money_from_string(reservation.bookingCurrency) | money_localized_format }} paid out of {{ reservation.totalReservationCost | money_from_string(reservation.bookingCurrency) | money_localized_format }}
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                    {% include '@Mails/snippets/reservationHasFailedPayment.html.twig' %}
+
+                </columns>
+            </row>
+            <row>
+                <columns small="12">
+
+                    <p>{{ notification is defined ? notification.reason | trans }}</p>
+                    {% if  reservation.property | propertyImageFromSchema %}
+                        <img style="max-height:300px;" src="{{ reservation.property | propertyImageFromSchema | ik(
+                            {
+                                "width" : 800,
+                                "height" : 320,
+                                "chain-1" : true,
+                                "blur" : 3,
+                                "next-chain" : true,
+                                "border" : "90_FFFFFF",
+                                "chain-2" : true,
+                                "overlay-image" : "send-invert_ryfHhdGkE.png",
+                                "overlay-focus" : "top",
+                                "chain-3" : true,
+                                "trim" : true,
+                            }
+                        ) }}"/>
+                    {% endif %}
+                    <spacer size="16"></spacer>
+
+                    {% include '@Mails/snippets/reservationOverview_Guest.html.twig' %}
+
+                    <spacer size="30"></spacer>
+                    {% set guestConfirmationEmailType = true %}
+                    {% include '@Mails/snippets/reservationPayments.html.twig' %}
+
+                </columns>
+            </row>
+
+        </container>
+    {% endblock %}
+{% endautoescape %}
