@@ -71,7 +71,7 @@ The reason why we do this: https://github.com/Kalyse/ConceptMailBundle/blob/mast
 
 I've been there before with other bundles which do this and the flexibility just lacks. I much prefer the following approach:
 
-    1. Create Mail Message
+    1. Create Mail Message 
 
     2. Send to Symfony/Messenger
 
